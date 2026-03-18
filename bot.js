@@ -17,13 +17,12 @@ const AGENTS = {
   'йигит': '8433945844', 'yigit': '8433945844',
   'иброхим': '8427762960', 'ibrokhim': '8427762960',
   'акмал': '7197962850', 'akmal': '7197962850',
-  'шахзод': '8508899713', 'shaxzod': '8508899713', 'шахзода': '8508899713',
+  'шахзод': '8508899713', 'shaxzod': '8508899713',
   'абдуллох': '8455461184', 'abdulloh': '8455461184',
 };
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-
 console.log('Ijara Bot запущен...');
 
 function parseField(text, ...keys) {
@@ -45,7 +44,6 @@ bot.on('message', async (msg) => {
   const apartment = parseField(text, 'Квартира', 'Apartment');
   const period = parseField(text, 'Срок', 'Period');
   const moveIn = parseField(text, 'Дата заселения', 'Заселение');
-  const extra = parseField(text, 'Дополнительно', 'Extra');
   const agentName = parseField(text, 'Агент', 'Agent');
 
   if (!clientName && !contacts) return;
@@ -59,48 +57,42 @@ bot.on('message', async (msg) => {
     client_phone: contacts || 'Не указано',
     budget: budget || null,
     district: location || null,
-    apartment_type: apartment || null,
-    rental_period: period || null,
-    move_in_date: moveIn || null,
-    additional_info: extra || null,
     agent_name: agentName || null,
     source: 'telegram_bot',
     status: 'new',
-    created_at: new Date().toISOString(),
   });
 
   if (error) {
     console.error('Ошибка:', error.message);
-    bot.sendMessage(chatId, 'Ошибка при сохранении лида.');
+    bot.sendMessage(chatId, 'Ошибка при сохранении: ' + error.message);
     return;
   }
 
   const managerMsg = '*Новый лид!*\n\n' +
-    'Клиент: ' + (clientName || '—') + '\n' +
-    'Контакты: ' + (contacts || '—') + '\n' +
-    'Бюджет: ' + (budget || '—') + '\n' +
-    'Локация: ' + (location || '—') + '\n' +
-    'Квартира: ' + (apartment || '—') + '\n' +
-    'Заселение: ' + (moveIn || '—') + '\n' +
-    'Агент: ' + (agentName || '—');
+    'Клиент: ' + (clientName || '-') + '\n' +
+    'Контакты: ' + (contacts || '-') + '\n' +
+    'Бюджет: ' + (budget || '-') + '\n' +
+    'Локация: ' + (location || '-') + '\n' +
+    'Квартира: ' + (apartment || '-') + '\n' +
+    'Срок: ' + (period || '-') + '\n' +
+    'Заселение: ' + (moveIn || '-') + '\n' +
+    'Агент: ' + (agentName || '-');
 
   await bot.sendMessage(MANAGER_CHAT_ID, managerMsg, { parse_mode: 'Markdown' });
 
   if (agentTgId) {
     const agentMsg = '*Новый лид назначен тебе!*\n\n' +
-      'Клиент: ' + (clientName || '—') + '\n' +
-      'Контакты: ' + (contacts || '—') + '\n' +
-      'Бюджет: ' + (budget || '—') + '\n' +
-      'Локация: ' + (location || '—') + '\n\n' +
-      'Чек-лист:\n' +
-      '1. Позвонить клиенту в течение 15 минут\n' +
-      '2. Уточнить детали\n' +
-      '3. Подобрать варианты\n' +
-      '4. Назначить показ';
+      'Клиент: ' + (clientName || '-') + '\n' +
+      'Контакты: ' + (contacts || '-') + '\n' +
+      'Бюджет: ' + (budget || '-') + '\n' +
+      'Локация: ' + (location || '-') + '\n' +
+      'Квартира: ' + (apartment || '-') + '\n' +
+      'Заселение: ' + (moveIn || '-') + '\n\n' +
+      'Чек-лист:\n1. Позвонить клиенту в течение 15 минут\n2. Уточнить детали\n3. Подобрать варианты\n4. Назначить показ';
     await bot.sendMessage(agentTgId, agentMsg, { parse_mode: 'Markdown' });
   }
 
-  await bot.sendMessage(chatId, 'Лид принят! Агент ' + (agentName || '—') + ' уведомлён.');
+  await bot.sendMessage(chatId, 'Лид принят! Агент ' + (agentName || '-') + ' уведомлён.');
 });
 
 bot.on('polling_error', (err) => console.error('Polling error:', err.message));
