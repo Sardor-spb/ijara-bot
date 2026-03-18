@@ -8,17 +8,18 @@ const MANAGER_CHAT_ID = '7042076197';
 
 const AGENTS = {
   'азиз': '7435209552', 'aziz': '7435209552',
-  'бахриддин': '7309753428', 'bahriddin': '7309753428',
-  'бехруз': '7829051357', 'bekhruz': '7829051357',
+  'бахриддин': '7309753428', 'bahriddin': '7309753428', 'бахридин': '7309753428',
+  'бехруз': '7829051357', 'bekhruz': '7829051357', 'бехрус': '7829051357',
   'асад': '7679936628', 'asad': '7679936628',
   'дэвид': '7272108083', 'david': '7272108083', 'давид': '7272108083',
   'давлат': '6584172190', 'davlat': '6584172190',
   'достон': '8388494905', 'doston': '8388494905',
   'йигит': '8433945844', 'yigit': '8433945844',
   'иброхим': '8427762960', 'ibrokhim': '8427762960',
+  'ибрагим': '8427762960', 'ibrahim': '8427762960',
   'акмал': '7197962850', 'akmal': '7197962850',
   'шахзод': '8508899713', 'shaxzod': '8508899713',
-  'абдуллох': '8455461184', 'abdulloh': '8455461184',
+  'абдуллох': '8455461184', 'abdulloh': '8455461184', 'абдулла': '8455461184',
 };
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -38,17 +39,18 @@ bot.on('message', async (msg) => {
   const text = msg.text || '';
   const chatId = msg.chat.id;
   const clientName = parseField(text, 'Клиент', 'Client');
-  const contacts = parseField(text, 'Контакты', 'Contacts', 'Телефон');
+  const contacts = parseField(text, 'Контакты', 'Contacts', 'Телефон', 'Phone');
   const budget = parseField(text, 'Бюджет', 'Budget');
-  const location = parseField(text, 'Локация', 'Location');
+  const location = parseField(text, 'Локация', 'Location', 'Расположение');
   const apartment = parseField(text, 'Квартира', 'Apartment');
   const period = parseField(text, 'Срок', 'Period');
-  const moveIn = parseField(text, 'Дата заселения', 'Заселение');
+  const moveIn = parseField(text, 'Дата заселения', 'Заселение', 'Move in');
   const agentName = parseField(text, 'Агент', 'Agent');
 
   if (!clientName && !contacts) return;
 
-  const agentTgId = agentName ? AGENTS[agentName.toLowerCase().trim()] : null;
+  const agentKey = agentName ? agentName.toLowerCase().trim() : null;
+  const agentTgId = agentKey ? AGENTS[agentKey] : null;
   const leadId = 'lead_' + Date.now();
 
   const { error } = await supabase.from('leads').insert({
@@ -64,7 +66,7 @@ bot.on('message', async (msg) => {
 
   if (error) {
     console.error('Ошибка:', error.message);
-    bot.sendMessage(chatId, 'Ошибка при сохранении: ' + error.message);
+    bot.sendMessage(chatId, 'Ошибка: ' + error.message);
     return;
   }
 
